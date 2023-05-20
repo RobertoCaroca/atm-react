@@ -7,15 +7,17 @@ const ATMDeposit = ({ isDeposit, onChange, isValid }) => {
       <input 
         id="number-input" 
         type="number" 
-        min="0" // Added min="0" to allow positive numbers
+        min="0"
         onChange={onChange}
       />
-      <input 
-        type="submit" 
-        disabled={!isValid} 
-        value="Submit" 
-        id="submit-input"
-      />
+      {isDeposit && (
+        <input 
+          type="submit" 
+          disabled={!isValid} 
+          value="Submit" 
+          id="submit-input"
+        />
+      )}
     </div>
   );
 };
@@ -30,7 +32,7 @@ const Account = () => {
     const value = Number(event.target.value);
     setDeposit(value);
 
-    setValidTransaction(value >= 0); // Changed to allow positive numbers (including 0)
+    setValidTransaction(value >= 0 && (isDeposit || totalState + value >= 0));
   };
 
   const handleSubmit = (event) => {
@@ -54,10 +56,8 @@ const Account = () => {
   return (
     <form onSubmit={handleSubmit}>
       <h2 id="total">Account Balance $ {totalState} </h2>
-      {totalState === 0 ? (
+      {totalState === 0 && (
         <>
-          <p>You don't have money in your account.</p>
-          <p>Make a deposit to save money and make cashback in the future.</p>
           <label htmlFor="deposit-input">Enter an amount to deposit:</label>
           <input
             id="deposit-input"
@@ -65,8 +65,15 @@ const Account = () => {
             min="0"
             onChange={handleChange}
           />
+          <input 
+            type="submit" 
+            disabled={!validTransaction} 
+            value="Submit" 
+            id="submit-input"
+          />
         </>
-      ) : (
+      )}
+      {totalState !== 0 && (
         <>
           <label htmlFor="mode-select">Select an action below to continue:</label>
           <select onChange={handleModeSelect} name="mode" id="mode-select">
