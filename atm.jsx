@@ -30,10 +30,16 @@ const Account = () => {
 
   const handleChange = (event) => {
     const value = Number(event.target.value);
-    setDeposit(value);
-
-    setValidTransaction(value >= 0 && (isDeposit || totalState + value >= 0));
+  
+    if (totalState === 0 && value >= 0) {
+      setDeposit(value);
+      setValidTransaction(true);
+    } else if (totalState !== 0) {
+      setDeposit(value);
+      setValidTransaction(value >= 0 && (isDeposit || totalState + value >= 0));
+    }
   };
+  
 
   const handleSubmit = (event) => {
     event.preventDefault();
