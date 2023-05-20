@@ -28,8 +28,16 @@ const Account = () => {
   const handleChange = (event) => {
     const value = Number(event.target.value);
     setDeposit(value);
-    setValidTransaction(value > 0 && (isDeposit || value <= totalState));
-  };
+  
+    if (value <= 0 || (!isDeposit && value > totalState)) {
+      if (!isDeposit && value > totalState) {
+        alert("Cannot cash back an amount larger than the account balance.");
+      }
+      setValidTransaction(false);
+    } else {
+      setValidTransaction(true);
+    }
+  };  
 
   const handleSubmit = (event) => {
     event.preventDefault();
