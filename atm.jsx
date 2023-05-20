@@ -1,19 +1,28 @@
-const ATMDeposit = ({ isDeposit, onChange, isValid }) => {
+const ATMDeposit = ({ isDeposit, onChange, isValid, onSubmit }) => {
   const choice = ['Deposit', 'Cash Back'];
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    if (isValid) {
+      onSubmit();
+    } else {
+      alert("Invalid transaction");
+    }
+  };
 
   return (
     <div>
       <h3>{choice[Number(!isDeposit)]}</h3>
-      <input 
-        id="number-input" 
-        type="number" 
+      <input
+        id="number-input"
+        type="number"
         onChange={onChange}
       />
-      <input 
-        type="submit" 
-        disabled={!isValid} 
-        value="Submit" 
+      <input
+        type="submit"
+        value="Submit"
         id="submit-input"
+        onClick={handleSubmit}
       />
     </div>
   );
@@ -28,48 +37,78 @@ const Account = () => {
   const handleChange = (event) => {
     const value = Number(event.target.value);
     setDeposit(value);
-  
-    if (value <= 0 || (!isDeposit && value > totalState)) {
-      if (!isDeposit && value > totalState) {
-        alert("Cannot cash back an amount larger than the account balance.");
-      }
+
+    // Validate input and set validTransaction accordingly
+    if (value <= 0) {
+      setValidTransaction(false);
+    } else if (!isDeposit && value > totalState) {
+      setValidTransaction(false);
+    } else if (value % 1 !== 0) {
       setValidTransaction(false);
     } else {
       setValidTransaction(true);
     }
-  };  
+  };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    if (!validTransaction) return;
-    setTotalState(isDeposit ? totalState + deposit : totalState - deposit);
+  const handleSubmit = () => {
+    if (!validTransaction) {
+      alert("Invalid transaction");
+      return;
+    }
+
+    if (!isDeposit && deposit > totalState) {
+      alert("You don't have enough money in your balance");
+      return;
+    }
+
+    const newTotal = isDeposit ? totalState + deposit : totalState - deposit;
+    setTotalState(newTotal);
     setValidTransaction(false);
-    setDeposit(0);
+    setDeposit(0); // Reset deposit field after submit
   };
 
   const handleModeSelect = (event) => {
     const mode = event.target.value;
+
     setIsDeposit(mode === 'Deposit');
     setValidTransaction(false);
-    setDeposit(0);
+    setDeposit(0); // Reset deposit field when mode changes
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2 id="total">Account Balance $ {totalState} </h2>
-      <label htmlFor="mode-select">Select an action below to continue</label>
-      <select onChange={handleModeSelect} name="mode" id="mode-select">
-        <option value="">--Choose Option--</option>
-        <option value="Deposit">Deposit</option>
-        <option value="Cash Back">Cash Back</option>
-      </select>
-      {(isDeposit !== null) && (
-        <ATMDeposit
-          isDeposit={isDeposit}
-          onChange={handleChange}
-          isValid={validTransaction}
-        />
-      )}
+    <form>
+      <>
+        <h2 id="total">Account Balance $ {totalState} </h2>
+        {totalState === 0 ? (
+          <div>
+            <p>
+              You don't have money in your account, make a deposit to save your money and make cash back in the future.
+            </p>
+            <input
+              type="number"
+              onChange={handleChange}
+              placeholder="Enter an amount to deposit"
+            />
+          </div>
+        ) : (
+          <div>
+            <label htmlFor="mode-select">Select an action below to continue</label>
+            <select onChange={handleModeSelect} name="mode" id="mode-select">
+              <option value="">--Choose Option--</option>
+              <option value="Deposit">Deposit</option>
+              <option value="Cash Back">Cash Back</option>
+            </select>
+            {isDeposit !== null && (
+              <ATMDeposit
+                isDeposit={isDeposit}
+                onChange={handleChange}
+                isValid={validTransaction}
+                onSubmit={handleSubmit}
+              />
+            )}
+          </div>
+        )}
+      </>
     </form>
   );
 };
