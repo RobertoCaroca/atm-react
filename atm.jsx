@@ -1,14 +1,5 @@
-const ATMDeposit = ({ isDeposit, onChange, isValid, onSubmit }) => {
+const ATMDeposit = ({ isDeposit, onChange, isValid }) => {
   const choice = ['Deposit', 'Cash Back'];
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    if (isValid) {
-      onSubmit();
-    } else {
-      alert("Invalid transaction");
-    }
-  };
 
   return (
     <div>
@@ -17,15 +8,16 @@ const ATMDeposit = ({ isDeposit, onChange, isValid, onSubmit }) => {
         id="number-input"
         type="number"
         onChange={onChange}
-        style={{ fontFamily: 'Nunito', marginBottom: '1rem' }}
+        style={{ fontFamily: 'Nunito' }} // Apply Nunito font style
       />
-      <input
-        type="submit"
-        value="Submit"
-        id="submit-input"
-        onClick={handleSubmit}
-        style={{ fontFamily: 'Nunito', width: '100%' }}
-      />
+      {isDeposit || isValid ? (
+        <input
+          type="submit"
+          value="Submit"
+          id="submit-input"
+          style={{ fontFamily: 'Nunito' }} // Apply Nunito font style
+        />
+      ) : null}
     </div>
   );
 };
@@ -40,31 +32,29 @@ const Account = () => {
     const value = Number(event.target.value);
     setDeposit(value);
 
-    // Validate input and set validTransaction accordingly
-    if (value <= 0) {
-      setValidTransaction(false);
-    } else if (!isDeposit && value > totalState) {
-      setValidTransaction(false);
-    } else if (value % 1 !== 0) {
-      setValidTransaction(false);
-    } else {
-      setValidTransaction(true);
-    }
+    // Simplify condition for valid transaction
+    setValidTransaction(
+      value > 0 && (isDeposit || value <= totalState || totalState === 0)
+    );
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
     if (!validTransaction) {
-      alert("Invalid transaction");
+      if (deposit <= 0) {
+        alert('You haven\'t entered an amount!');
+      } else if (deposit < 0) {
+        alert('You can’t enter a negative amount');
+      } else if (deposit % 1 !== 0) {
+        alert('You can\'t enter an amount with decimals');
+      } else if (!isDeposit && deposit > totalState) {
+        alert('You don\'t have enough money in your balance');
+      }
       return;
     }
 
-    if (!isDeposit && deposit > totalState) {
-      alert("You don't have enough money in your balance");
-      return;
-    }
-
-    const newTotal = isDeposit ? totalState + deposit : totalState - deposit;
-    setTotalState(newTotal);
+    setTotalState(isDeposit ? totalState + deposit : totalState - deposit);
     setValidTransaction(false);
     setDeposit(0); // Reset deposit field after submit
   };
@@ -78,50 +68,34 @@ const Account = () => {
   };
 
   return (
-    <form>
-      <>
-        <h2 id="total" style={{ fontFamily: 'Nunito' }}>
-          Account Balance $ {totalState}
-        </h2>
-        {totalState === 0 ? (
-          <div>
-            <p style={{ fontFamily: 'Nunito' }}>
-              You don't have money in your account, make a deposit to save your money and make cash back in the future.
-            </p>
-            <input
-              type="number"
+    <form onSubmit={handleSubmit}>
+      <h2 id="total" style={{ fontFamily: 'Nunito' }}>Account Balance $ {totalState} </h2>
+      {totalState === 0 ? (
+        <div>
+          <p style={{ fontFamily: 'Nunito' }}>
+            You don't have money in your account, make a deposit to save your money and make cash back in the future.
+          </p>
+          <label htmlFor="number-input" style={{ fontFamily: 'Nunito' }}>Enter an amount to deposit:</label>
+        </div>
+      ) : (
+        <>
+          <label htmlFor="mode-select" style={{ fontFamily: 'Nunito' }}>
+            Select an action below to continue
+          </label>
+          <select onChange={handleModeSelect} name="mode" id="mode-select">
+            <option value="">--Choose Option--</option>
+            <option value="Deposit">Deposit</option>
+            <option value="Cash Back">Cash Back</option>
+          </select>
+          {(isDeposit !== null) && (
+            <ATMDeposit
+              isDeposit={isDeposit}
               onChange={handleChange}
-              placeholder="Enter an amount to deposit"
-              style={{ fontFamily: 'Nunito', marginBottom: '1rem' }}
+              isValid={validTransaction}
             />
-            <input
-              type="submit"
-              value="Submit"
-              onClick={handleSubmit}
-              style={{ fontFamily: 'Nunito', width: '100%' }}
-            />
-          </div>
-        ) : (
-          <div>
-            <label htmlFor="mode-select" style={{ fontFamily: 'Nunito', marginBottom: '1rem' }}>
-              Select an action below to continue
-            </label>
-            <select onChange={handleModeSelect} name="mode" id="mode-select" style={{ fontFamily: 'Nunito', marginBottom: '1rem' }}>
-              <option value="">--Choose Option--</option>
-              <option value="Deposit">Deposit</option>
-              <option value="Cash Back">Cash Back</option>
-            </select>
-            {isDeposit !== null && (
-              <ATMDeposit
-                isDeposit={isDeposit}
-                onChange={handleChange}
-                isValid={validTransaction}
-                onSubmit={handleSubmit}
-              />
-            )}
-          </div>
-        )}
-      </>
+          )}
+        </>
+      )}
     </form>
   );
 };
