@@ -4,20 +4,18 @@ const ATMDeposit = ({ isDeposit, onChange, isValid }) => {
   return (
     <div>
       <h3>{choice[Number(!isDeposit)]}</h3>
-      <input
-        id="number-input"
-        type="number"
+      <input 
+        id="number-input" 
+        type="number" 
+        min="0" // Added min="0" to allow positive numbers
         onChange={onChange}
-        style={{ fontFamily: 'Nunito' }} // Apply Nunito font style
       />
-      {isDeposit || isValid ? (
-        <input
-          type="submit"
-          value="Submit"
-          id="submit-input"
-          style={{ fontFamily: 'Nunito' }} // Apply Nunito font style
-        />
-      ) : null}
+      <input 
+        type="submit" 
+        disabled={!isValid} 
+        value="Submit" 
+        id="submit-input"
+      />
     </div>
   );
 };
@@ -32,31 +30,17 @@ const Account = () => {
     const value = Number(event.target.value);
     setDeposit(value);
 
-    // Simplify condition for valid transaction
-    setValidTransaction(
-      value > 0 && (isDeposit || value <= totalState || totalState === 0)
-    );
+    setValidTransaction(value >= 0); // Changed to allow positive numbers (including 0)
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    if (!validTransaction) {
-      if (deposit <= 0) {
-        alert('You haven\'t entered an amount!');
-      } else if (deposit < 0) {
-        alert('You can’t enter a negative amount');
-      } else if (deposit % 1 !== 0) {
-        alert('You can\'t enter an amount with decimals');
-      } else if (!isDeposit && deposit > totalState) {
-        alert('You don\'t have enough money in your balance');
-      }
-      return;
-    }
+    if (!validTransaction) return;
 
     setTotalState(isDeposit ? totalState + deposit : totalState - deposit);
     setValidTransaction(false);
-    setDeposit(0); // Reset deposit field after submit
+    setDeposit(0);
   };
 
   const handleModeSelect = (event) => {
@@ -64,30 +48,33 @@ const Account = () => {
 
     setIsDeposit(mode === 'Deposit');
     setValidTransaction(false);
-    setDeposit(0); // Reset deposit field when mode changes
+    setDeposit(0);
   };
 
   return (
     <form onSubmit={handleSubmit}>
-      <h2 id="total" style={{ fontFamily: 'Nunito' }}>Account Balance $ {totalState} </h2>
+      <h2 id="total">Account Balance $ {totalState} </h2>
       {totalState === 0 ? (
-        <div>
-          <p style={{ fontFamily: 'Nunito' }}>
-            You don't have money in your account, make a deposit to save your money and make cash back in the future.
-          </p>
-          <label htmlFor="number-input" style={{ fontFamily: 'Nunito' }}>Enter an amount to deposit:</label>
-        </div>
+        <>
+          <p>You don't have money in your account.</p>
+          <p>Make a deposit to save money and make cashback in the future.</p>
+          <label htmlFor="deposit-input">Enter an amount to deposit:</label>
+          <input
+            id="deposit-input"
+            type="number"
+            min="0"
+            onChange={handleChange}
+          />
+        </>
       ) : (
         <>
-          <label htmlFor="mode-select" style={{ fontFamily: 'Nunito' }}>
-            Select an action below to continue
-          </label>
+          <label htmlFor="mode-select">Select an action below to continue:</label>
           <select onChange={handleModeSelect} name="mode" id="mode-select">
-            <option value="">--Choose Option--</option>
+            <option value="">-- Choose Option --</option>
             <option value="Deposit">Deposit</option>
             <option value="Cash Back">Cash Back</option>
           </select>
-          {(isDeposit !== null) && (
+          {isDeposit !== null && (
             <ATMDeposit
               isDeposit={isDeposit}
               onChange={handleChange}
@@ -95,6 +82,9 @@ const Account = () => {
             />
           )}
         </>
+      )}
+      {validTransaction === false && (
+        <p className="error-message">Invalid transaction.</p>
       )}
     </form>
   );
