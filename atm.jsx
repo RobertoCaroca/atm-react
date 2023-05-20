@@ -39,18 +39,20 @@ const Account = () => {
       setValidTransaction(value >= 0 && (isDeposit || totalState + value >= 0));
     }
   };
-  
 
   const handleSubmit = (event) => {
     event.preventDefault();
-
-    if (!validTransaction) return;
-
-    setTotalState(isDeposit ? totalState + deposit : totalState - deposit);
+  
+    if (isDeposit) {
+      setTotalState(totalState + deposit);
+    } else {
+      setTotalState(totalState - deposit);
+    }
+  
     setValidTransaction(false);
     setDeposit(0);
   };
-
+  
   const handleModeSelect = (event) => {
     const mode = event.target.value;
 
