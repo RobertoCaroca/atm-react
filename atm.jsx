@@ -18,12 +18,14 @@ const ATMDeposit = ({ isDeposit, onChange, isValid, onSubmit }) => {
         type="number"
         onChange={onChange}
       />
-      <input
-        type="submit"
-        value="Submit"
-        id="submit-input"
-        onClick={handleSubmit}
-      />
+      {isValid && (
+        <input
+          type="submit"
+          value="Submit"
+          id="submit-input"
+          onClick={handleSubmit}
+        />
+      )}
     </div>
   );
 };
@@ -38,7 +40,6 @@ const Account = () => {
     const value = Number(event.target.value);
     setDeposit(value);
 
-    // Validate input and set validTransaction accordingly
     if (value <= 0) {
       setValidTransaction(false);
     } else if (!isDeposit && value > totalState) {
@@ -64,7 +65,7 @@ const Account = () => {
     const newTotal = isDeposit ? totalState + deposit : totalState - deposit;
     setTotalState(newTotal);
     setValidTransaction(false);
-    setDeposit(0); // Reset deposit field after submit
+    setDeposit(0);
   };
 
   const handleModeSelect = (event) => {
@@ -72,7 +73,7 @@ const Account = () => {
 
     setIsDeposit(mode === 'Deposit');
     setValidTransaction(false);
-    setDeposit(0); // Reset deposit field when mode changes
+    setDeposit(0);
   };
 
   return (
@@ -89,6 +90,14 @@ const Account = () => {
               onChange={handleChange}
               placeholder="Enter an amount to deposit"
             />
+            {deposit > 0 && (
+              <ATMDeposit
+                isDeposit={true}
+                onChange={handleChange}
+                isValid={true}
+                onSubmit={handleSubmit}
+              />
+            )}
           </div>
         ) : (
           <div>
@@ -98,7 +107,7 @@ const Account = () => {
               <option value="Deposit">Deposit</option>
               <option value="Cash Back">Cash Back</option>
             </select>
-            {isDeposit !== null && (
+            {(isDeposit !== null) && (
               <ATMDeposit
                 isDeposit={isDeposit}
                 onChange={handleChange}
